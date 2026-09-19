@@ -26,14 +26,34 @@ jobs:
         channel: 'stable'
         cache: true
 
-    - name: Install dependencies
-      run: flutter pub get
+    - name: Locate Flutter Project & Install Dependencies
+      run: |
+        if [ -f "pubspec.yaml" ]; then
+          echo "Project found in root"
+          flutter pub get
+        else
+          PROJECT_DIR=$(find . -maxdepth 3 -name "pubspec.yaml" -exec dirname {} \;)
+          echo "Project found in $PROJECT_DIR"
+          cd $PROJECT_DIR
+          flutter pub get
+        fi
 
     - name: Build APK
-      run: flutter build apk --release
+      run: |
+        if [ -f "pubspec.yaml" ]; then
+          flutter build apk --release
+        else
+          PROJECT_DIR=$(find . -maxdepth 3 -name "pubspec.yaml" -exec dirname {} \;)
+          cd $PROJECT_DIR
+          flutter build apk --release
+          mkdir -p $GITHUB_WORKSPACE/build/app/outputs/flutter-apk/
+          cp build/app/outputs/flutter-apk/app-release.apk $GITHUB_WORKSPACE/build/app/outputs/flutter-apk/
+        fi
 
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: release-apk
-        path: build/app/outputs/flutter-apk/app-release.apk
+        path: |
+          build/app/outputs/flutter-apk/app-release.apk
+          **/build/app/outputs/flutter-apk/app-release.apk
