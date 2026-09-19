@@ -21,14 +21,25 @@ jobs:
         flutter-version: '3.24.0'
         channel: 'stable'
         
-    - name: Bağımlılıkları yükle
-      run: flutter pub get
-      
-    - name: APK Derle
-      run: flutter build apk --release
-      
-    - name: APK'yı Yükle
+    - name: Projeni Avtomatik Tap və Derlə
+      run: |
+        # pubspec.yaml faylının hansı alt qovluqda olduğunu tapırıq
+        PROJECT_ROOT=$(dirname $(find . -name "pubspec.yaml" | head -n 1))
+        echo "Proje burda tapıldı: $PROJECT_ROOT"
+        
+        # Həmin qovluğa keçirik
+        cd "$PROJECT_ROOT"
+        
+        # Bağımlılıqları yükləyib APK-nı çıxarırıq
+        flutter pub get
+        flutter build apk --release
+        
+        # Hazır olan APK-nı GitHub-ın görə biləcəyi ortaq yerə çıxarırıq
+        mkdir -p $GITHUB_WORKSPACE/apk-output
+        cp build/app/outputs/flutter-apk/app-release.apk $GITHUB_WORKSPACE/apk-output/
+        
+    - name: APK-nı Yüklə
       uses: actions/upload-artifact@v4
       with:
         name: release-apk
-        path: build/app/outputs/flutter-apk/app-release.apk
+        path: apk-output/app-release.apk
