@@ -12,7 +12,7 @@ jobs:
     - uses: actions/checkout@v4
     
     - uses: actions/setup-java@v4
-      with:
+with:
         distribution: 'zulu'
         java-version: '17'
         
@@ -24,6 +24,13 @@ jobs:
     - name: Asılılıqları Yüklə
       run: flutter pub get
       
+    - name: Android Build Plugin Xətasını Düzəlt
+      run: |
+        # Əgər library plugin yazılıbsa application ilə əvəz edirik
+        if [ -f "android/app/build.gradle" ]; then
+          sed -i "s/com.android.library/com.android.application/g" android/app/build.gradle
+        fi
+        
     - name: APK Derlə
       run: flutter build apk --release
       
