@@ -24,11 +24,21 @@ jobs:
     - name: Asılılıqları Yüklə
       run: flutter pub get
       
-    - name: Android Build Plugin Xətasını Düzəlt
+    - name: Gradle Faylını Python ilə Düzəlt
       run: |
-        if [ -f "android/app/build.gradle" ]; then
-          sed -i "s/com.android.library/com.android.application/g" android/app/build.gradle
-        fi
+        python3 -c "
+        file_path = 'android/app/build.gradle'
+        with open(file_path, 'r') as f:
+            content = f.read()
+        
+        # Kitabxana pluginini tətbiq plugininə çeviririk
+        content = content.replace('com.android.library', 'com.android.application')
+        content = content.replace('id \"com.android.library\"', 'id \"com.android.application\"')
+        
+        with open(file_path, 'w') as f:
+            f.write(content)
+        print('build.gradle uğurla yeniləndi!')
+        "
         
     - name: APK Derlə
       run: flutter build apk --release
