@@ -25,10 +25,7 @@ jobs:
       
     - name: Derlenmiş dosyaları Capacitor için hazırla
       run: |
-        # Capacitor'un beklediği dist klasörünü oluşturuyoruz
         mkdir -p dist
-        
-        # Olası derleme çıktı klasörlerini kontrol edip dist içine kopyalıyoruz
         if [ -d "build/client" ]; then cp -a build/client/. dist/
         elif [ -d "build" ]; then cp -a build/. dist/
         elif [ -d "out" ]; then cp -a out/. dist/
@@ -36,7 +33,6 @@ jobs:
         elif [ -d ".vercel/output/static" ]; then cp -a .vercel/output/static/. dist/
         fi
         
-        # Eğer index.html bulunamazsa, işlemin çökmemesi için geçici bir sayfa oluşturuyoruz
         if [ ! -f "dist/index.html" ]; then
           echo "<html><body style='text-align:center; padding:50px; font-family:sans-serif;'><h2>Uygulama Hazırlanıyor...</h2><p>Eğer bu ekranı görüyorsanız, web projeniz Statik Site (SPA) olarak dışa aktarılmamış demektir.</p></body></html>" > dist/index.html
         fi
@@ -48,11 +44,11 @@ jobs:
         npx cap add android
         npx cap sync android
         
-    - name: Java JDK quraşdır
+    - name: Java JDK 21 quraşdır
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
-        java-version: '17'
+        java-version: '21' # Hatanın çözümü: Java versiyonu 21 yapıldı
         
     - name: APK Derlə (Gradle)
       run: |
