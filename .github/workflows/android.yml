@@ -44,11 +44,19 @@ jobs:
         npx cap add android
         npx cap sync android
         
+    - name: Kotlin Kopya Sınıf Hatasını Çöz (Patch build.gradle)
+      run: |
+        echo "
+        configurations.all {
+            exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
+            exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
+        }" >> android/app/build.gradle
+        
     - name: Java JDK 21 quraşdır
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
-        java-version: '21' # Hatanın çözümü: Java versiyonu 21 yapıldı
+        java-version: '21'
         
     - name: APK Derlə (Gradle)
       run: |
