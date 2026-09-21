@@ -24,32 +24,55 @@ jobs:
     - name: Asılılıqları Yüklə
       run: flutter pub get
       
-    - name: Gradle Faylını Debug Et və Düzəlt
+    - name: Təmiz və İşlək build.gradle Yarat
       run: |
-        python3 -c "
-        import os
-        path = 'android/app/build.gradle'
-        if os.path.exists(path):
-            with open(path, 'r') as f:
-                lines = f.readlines()
-            
-            print('--- İLK 15 SƏTİR ---')
-            for l in lines[:15]:
-                print(l, end='')
-            print('--------------------')
-            
-            new_lines = []
-            for line in lines:
-                # Kitabxana pluginini tətbiq plugininə çeviririk
-                line = line.replace('com.android.library', 'com.android.application')
-                new_lines.append(line)
-                
-            with open(path, 'w') as f:
-                f.writelines(new_lines)
-            print('Fayl yenidən yazıldı.')
-        else:
-            print('Fayl tapılmadı!')
-        "
+        # Problemli köhnə build.gradle faylını silib təmiz tətbiq faylı yaradırıq
+        rm -f android/app/build.gradle
+        
+        cat << 'EOT' > android/app/build.gradle
+        plugins {
+            id "com.android.application"
+            id "kotlin-android"
+            id "dev.flutter.flutter-gradle-plugin"
+        }
+
+        android {
+            namespace "com.example.cedvel"
+            compileSdkVersion flutter.compileSdkVersion
+            ndkVersion flutter.ndkVersion
+
+            compileOptions {
+                sourceCompatibility JavaVersion.VERSION_1_8
+                targetCompatibility JavaVersion.VERSION_1_8
+            }
+
+            kotlinOptions {
+                jvmTarget = '1.8'
+            }
+
+            defaultConfig {
+                applicationId "com.example.cedvel"
+                minSdkVersion flutter.minSdkVersion
+                targetSdkVersion flutter.targetSdkVersion
+                versionCode flutterVersionCode.toInteger()
+                versionName flutterVersionName
+            }
+
+            buildTypes {
+                release {
+                    signingConfig signingConfigs.debug
+                    shrinkResources false
+                    minifyEnabled false
+                }
+            }
+        }
+
+        flutter {
+            source '../..'
+        }
+        EOT
+        
+        echo "Yeni build.gradle uğurla yaradıldı!"
         
     - name: APK Derlə
       run: flutter build apk --release
