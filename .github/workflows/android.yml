@@ -1,4 +1,4 @@
-name: Web to APK Build
+name: Android CI/CD (Native Flutter)
 
 on:
   push:
@@ -9,63 +9,26 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Kodu yüklə
-      uses: actions/checkout@v4
-      
-    - name: Node.js quraşdır
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        
-    - name: Asılılıqları yüklə (npm install)
-      run: npm install
-      
-    - name: Veb saytı derlə (Vite build)
-      run: npm run build
-      
-    - name: Derlenmiş dosyaları Capacitor için hazırla
-      run: |
-        mkdir -p dist
-        if [ -d "build/client" ]; then cp -a build/client/. dist/
-        elif [ -d "build" ]; then cp -a build/. dist/
-        elif [ -d "out" ]; then cp -a out/. dist/
-        elif [ -d ".output/public" ]; then cp -a .output/public/. dist/
-        elif [ -d ".vercel/output/static" ]; then cp -a .vercel/output/static/. dist/
-        fi
-        
-        if [ ! -f "dist/index.html" ]; then
-          echo "<html><body style='text-align:center; padding:50px; font-family:sans-serif;'><h2>Uygulama Hazırlanıyor...</h2><p>Eğer bu ekranı görüyorsanız, web projeniz Statik Site (SPA) olarak dışa aktarılmamış demektir.</p></body></html>" > dist/index.html
-        fi
-
-    - name: Capacitor Quraşdır ve Android layihəsi yarat
-      run: |
-        npm install @capacitor/core @capacitor/cli @capacitor/android
-        npx cap init "Nibras App" "com.nibras.app" --web-dir dist
-        npx cap add android
-        npx cap sync android
-        
-    - name: Kotlin Kopya Sınıf Hatasını Çöz (Patch build.gradle)
-      run: |
-        echo "
-        configurations.all {
-            exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'
-            exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
-        }" >> android/app/build.gradle
-        
-    - name: Java JDK 21 quraşdır
-      uses: actions/setup-java@v4
+    - uses: actions/checkout@v4
+    
+    - uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
-        java-version: '21'
+        java-version: '17'
         
-    - name: APK Derlə (Gradle)
-      run: |
-        cd android
-        chmod +x gradlew
-        ./gradlew assembleDebug
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.24.0'
+        channel: 'stable'
         
+    - name: Asılılıqları Yüklə
+      run: flutter pub get
+      
+    - name: APK Derlə
+      run: flutter build apk --release
+      
     - name: Hazır APK-nı Yüklə
       uses: actions/upload-artifact@v4
       with:
-        name: nibras-app-apk
-        path: android/app/build/outputs/apk/debug/app-debug.apk
+        name: nibras-native-apk
+        path: build/app/outputs/flutter-apk/app-release.apk
