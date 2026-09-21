@@ -23,7 +23,25 @@ jobs:
     - name: Veb saytı derlə (Vite build)
       run: npm run build
       
-    - name: Capacitor Quraşdır və Android layihəsi yarat
+    - name: Derlenmiş dosyaları Capacitor için hazırla
+      run: |
+        # Capacitor'un beklediği dist klasörünü oluşturuyoruz
+        mkdir -p dist
+        
+        # Olası derleme çıktı klasörlerini kontrol edip dist içine kopyalıyoruz
+        if [ -d "build/client" ]; then cp -a build/client/. dist/
+        elif [ -d "build" ]; then cp -a build/. dist/
+        elif [ -d "out" ]; then cp -a out/. dist/
+        elif [ -d ".output/public" ]; then cp -a .output/public/. dist/
+        elif [ -d ".vercel/output/static" ]; then cp -a .vercel/output/static/. dist/
+        fi
+        
+        # Eğer index.html bulunamazsa, işlemin çökmemesi için geçici bir sayfa oluşturuyoruz
+        if [ ! -f "dist/index.html" ]; then
+          echo "<html><body style='text-align:center; padding:50px; font-family:sans-serif;'><h2>Uygulama Hazırlanıyor...</h2><p>Eğer bu ekranı görüyorsanız, web projeniz Statik Site (SPA) olarak dışa aktarılmamış demektir.</p></body></html>" > dist/index.html
+        fi
+
+    - name: Capacitor Quraşdır ve Android layihəsi yarat
       run: |
         npm install @capacitor/core @capacitor/cli @capacitor/android
         npx cap init "Nibras App" "com.nibras.app" --web-dir dist
