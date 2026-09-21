@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -7,7 +9,7 @@ import 'services/plan_service.dart';
 import 'services/reminder_service.dart';
 import 'widgets/reminder_banner.dart';
 import 'screens/main_shell.dart';
-import 'screens/onboarding_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,8 +25,31 @@ void main() async {
   runApp(const CedvelApp());
 }
 
-class CedvelApp extends StatelessWidget {
+class CedvelApp extends StatefulWidget {
   const CedvelApp({super.key});
+
+  @override
+  State<CedvelApp> createState() => _CedvelAppState();
+}
+
+class _CedvelAppState extends State<CedvelApp> {
+  static const _splashDuration = Duration(milliseconds: 2500);
+  Timer? _splashTimer;
+  bool _splashDone = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _splashTimer = Timer(_splashDuration, () {
+      if (mounted) setState(() => _splashDone = true);
+    });
+  }
+
+  @override
+  void dispose() {
+    _splashTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,15 +71,17 @@ class CedvelApp extends StatelessWidget {
             builder: (context, child) => ReminderBannerHost(
               child: child ?? const SizedBox.shrink(),
             ),
-            home: !service.isLoaded
-                ? const Scaffold(
-                    body: Center(
-                      child: CircularProgressIndicator(color: Color(0xFF6C5CE7)),
-                    ),
-                  )
-                : service.onboardingDone
-                    ? const MainShell()
-                    : const OnboardingScreen(),
+            home: !_splashDone
+                ? const SplashScreen()
+                : !service.isLoaded
+                    ? const Scaffold(
+                        body: Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF6C5CE7),
+                          ),
+                        ),
+                      )
+                    : const MainShell(),
           );
         },
       ),

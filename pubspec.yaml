@@ -19,7 +19,8 @@ dependencies:
   flutter_local_notifications: ^17.2.4
   timezone: ^0.9.4
   gal: ^2.3.0
-  share_plus: ^10.0.2
+  # 9.x still supports the Dart SDK shipped with Flutter 3.19.
+  share_plus: ^9.0.0
   path_provider: ^2.1.4
 
 dev_dependencies:

@@ -3,8 +3,9 @@
 Bu Flutter Android layihəsidir (veb deyil).
 
 ## Tələblər
-- Flutter 3.16+
-- Android Studio / Android SDK
+- Flutter 3.24+ (Flutter 3.32 ilə yoxlanılıb)
+- Android SDK platform 34
+- Java 17
 
 ## APK yığmaq
 
@@ -21,6 +22,13 @@ flutter build apk --release
 ```
 
 Nəticə: `build/app/outputs/flutter-apk/app-release.apk`
+
+## GitHub Actions
+
+`.github/workflows/android-apk.yml` workflow-u `workflow_dispatch` ilə və ya
+`Cedvel-Android` qovluğuna dəyişiklik göndəriləndə release APK-ni yığır.
+Build tamamlandıqdan sonra GitHub Actions səhifəsində `cedvel-release-apk`
+artifact-ini endirin.
 
 ## Bu versiyada
 - Demo plan yoxdur
