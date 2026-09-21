@@ -24,20 +24,31 @@ jobs:
     - name: Asılılıqları Yüklə
       run: flutter pub get
       
-    - name: Gradle Faylını Python ilə Düzəlt
+    - name: Gradle Faylını Debug Et və Düzəlt
       run: |
         python3 -c "
-        file_path = 'android/app/build.gradle'
-        with open(file_path, 'r') as f:
-            content = f.read()
-        
-        # Kitabxana pluginini tətbiq plugininə çeviririk
-        content = content.replace('com.android.library', 'com.android.application')
-        content = content.replace('id \"com.android.library\"', 'id \"com.android.application\"')
-        
-        with open(file_path, 'w') as f:
-            f.write(content)
-        print('build.gradle uğurla yeniləndi!')
+        import os
+        path = 'android/app/build.gradle'
+        if os.path.exists(path):
+            with open(path, 'r') as f:
+                lines = f.readlines()
+            
+            print('--- İLK 15 SƏTİR ---')
+            for l in lines[:15]:
+                print(l, end='')
+            print('--------------------')
+            
+            new_lines = []
+            for line in lines:
+                # Kitabxana pluginini tətbiq plugininə çeviririk
+                line = line.replace('com.android.library', 'com.android.application')
+                new_lines.append(line)
+                
+            with open(path, 'w') as f:
+                f.writelines(new_lines)
+            print('Fayl yenidən yazıldı.')
+        else:
+            print('Fayl tapılmadı!')
         "
         
     - name: APK Derlə
